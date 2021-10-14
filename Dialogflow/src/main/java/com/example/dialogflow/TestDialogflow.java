@@ -22,14 +22,14 @@ public class TestDialogflow {
 //    private SessionName session;
     private SessionsSettings sessionsSettings;
     public String queryFullfillText;
-    public String input;
+    public String requestTextInput;
 
     public void getSession(SessionsSettings sessionsSettings) {
         this.sessionsSettings =  sessionsSettings;
     }
 
     public void DetectIntentTexts (String input) {
-        this.input = input;
+        this.requestTextInput = input;
         List<String> text = new ArrayList<String>();
 //        String input;
         Map<String, QueryResult> ret;
@@ -44,14 +44,14 @@ public class TestDialogflow {
 //                System.exit(0);
 
         System.out.println("input : " + input);
-//            text.add(input);
-//            System.out.println(text);
+        text.add(input);
+//        System.out.println(text);
         ret = new HashMap<>();
 
         try {
 //                //In the argument---Is the project described in the downloaded json file_Please replace with id.
             ret.putAll(detectIntentTexts("android-dialogflow-qrtf",
-                    input, sessionId, "en"));
+                    text, sessionId, "en"));
 
             queryFullfillText = ret.get(input).getFulfillmentText();
             System.out.format("Agent: %s\n", queryFullfillText);
@@ -64,7 +64,7 @@ public class TestDialogflow {
     }
 
     public Map<String, QueryResult> detectIntentTexts(
-            String projectId, String text, String sessionId, String languageCode)
+            String projectId, List<String> texts, String sessionId, String languageCode)
             throws IOException, ApiException {
         Map<String, QueryResult> queryResults = Maps.newHashMap();
 
@@ -76,34 +76,34 @@ public class TestDialogflow {
         System.out.println("Session Path: " + session.toString());
 
         // Detect intents for each text input
-//            for (String text : texts) {
-        // Set the text (hello) and language code (en-US) for the query
-        TextInput.Builder textInput =
-                TextInput.newBuilder().setText(text).setLanguageCode(languageCode);
+        for (String text : texts) {
+            // Set the text (hello) and language code (en-US) for the query
+            TextInput.Builder textInput =
+                    TextInput.newBuilder().setText(text).setLanguageCode(languageCode);
 
-        // Build the query with the TextInput
-        QueryInput queryInput = QueryInput.newBuilder().setText(textInput).build();
+            // Build the query with the TextInput
+            QueryInput queryInput = QueryInput.newBuilder().setText(textInput).build();
 
-        // Performs the detect intent request
-        DetectIntentResponse response = sessionsClient.detectIntent(session, queryInput);
+            // Performs the detect intent request
+            DetectIntentResponse response = sessionsClient.detectIntent(session, queryInput);
 
-        // Display the query result
-        QueryResult queryResult = response.getQueryResult();
+            // Display the query result
+            QueryResult queryResult = response.getQueryResult();
 
-        System.out.println("====================");
-        System.out.format("Query Text: '%s'\n", queryResult.getQueryText());
-        System.out.format(
-                "Detected Intent: %s (confidence: %f)\n",
-                queryResult.getIntent().getDisplayName(), queryResult.getIntentDetectionConfidence());
-        System.out.format(
-                "Fulfillment Text: '%s'\n",
-                queryResult.getFulfillmentMessagesCount() > 0
-                        ? queryResult.getFulfillmentMessages(0).getText()
-                        : "Triggered Default Fallback Intent");
-//                System.out.format("%s", queryResult.getDiagnosticInfo());
+            System.out.println("====================");
+            System.out.format("Query Text: '%s'\n", queryResult.getQueryText());
+            System.out.format(
+                    "Detected Intent: %s (confidence: %f)\n",
+                    queryResult.getIntent().getDisplayName(), queryResult.getIntentDetectionConfidence());
+            System.out.format(
+                    "Fulfillment Text: '%s'\n",
+                    queryResult.getFulfillmentMessagesCount() > 0
+                            ? queryResult.getFulfillmentMessages(0).getText()
+                            : "Triggered Default Fallback Intent");
+    //                System.out.format("%s", queryResult.getDiagnosticInfo());
 
-        queryResults.put(text, queryResult);
-//            }
+            queryResults.put(text, queryResult);
+        }
 
         return queryResults;
     }
