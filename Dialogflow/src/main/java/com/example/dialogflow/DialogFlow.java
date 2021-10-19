@@ -29,6 +29,9 @@ public class DialogFlow implements DialogueInputText {
     private SessionsSettings sessionsSettings;
     private String sessionId;
 
+    private Log log;
+    private Config config;
+
     public void getSession(SessionsSettings sessionsSettings, String sessionId) {
         this.sessionsSettings = sessionsSettings;
         this.sessionId = sessionId;
@@ -38,6 +41,7 @@ public class DialogFlow implements DialogueInputText {
     @Override
     public void open(ResultListener listener) {
         this.listener = listener;
+//        listener.OnResult();
     }
 
     @Override
@@ -61,7 +65,7 @@ public class DialogFlow implements DialogueInputText {
             e.printStackTrace();
         }
 
-        System.out.format("End conver detect: '%s'\n", ret.get(input).getDiagnosticInfo().containsFields("end_conversation"));
+//        System.out.format("End conver detect: '%s'\n", ret.get(input).getDiagnosticInfo().containsFields("end_conversation"));
 
 //        this.listener.OnResult(queryFullfillText, 1.0, "");
         System.out.println(this.listener);
@@ -75,6 +79,8 @@ public class DialogFlow implements DialogueInputText {
 
     @Override
     public void init(Config config, th.co.ais.genesis.blueprint.log.Log log, Object extended_arg) throws IllegalArgumentException {
+        this.log = log;
+        this.config = config;
 
     }
 
@@ -82,6 +88,12 @@ public class DialogFlow implements DialogueInputText {
             String projectId, List<String> texts, String sessionId, String languageCode)
             throws IOException, ApiException {
         Map<String, QueryResult> queryResults = Maps.newHashMap();
+
+
+//        this.log.debug();
+
+//        String cred = this.config.get("credential");
+
 
         System.out.println("sessionsSettings (module) " + sessionsSettings);
 
