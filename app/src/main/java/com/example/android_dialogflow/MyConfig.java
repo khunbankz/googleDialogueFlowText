@@ -1,11 +1,21 @@
 package com.example.android_dialogflow;
 
+import android.os.AsyncTask;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.List;
 
 import th.co.ais.genesis.blueprint.configuration.Config;
 import th.co.ais.genesis.blueprint.log.Log;
 
 public class MyConfig implements Config {
+    final String credUrl =
+            "https://raw.githubusercontent.com/Weerapat1455/And_cred/main/credential.json?token=AOKNYQ4OZSB4HQHAUB67ZOTBP6V7W";
+    private String result;
+//    private boolean check = false;
 
     @Override
     public Integer getAsInteger(String name) {
@@ -49,6 +59,32 @@ public class MyConfig implements Config {
 
     @Override
     public String get(String name) {
+//        if (name.equals("setCredentials")) {
+//            new GetCredUrl().execute();
+//            System.out.println("result 1 " + result);
+//            return "credentials checked";
+//        }
+        if (name.equals("getCredentials")) {
+            new GetCredUrl().execute();
+            try {
+                Thread.sleep(1000);
+                System.out.println("result 2 " + result);
+                return result;
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+        }
+        if (name.equals("languageCode")) {
+            String language;
+
+            language = "en";
+//            language = "th";
+            return language;
+        }
+        if (name.equals("maxInputLength")) {
+            int maxInputLength = 7;
+            return String.valueOf(maxInputLength);
+        }
         return null;
     }
 
@@ -79,11 +115,46 @@ public class MyConfig implements Config {
 
     @Override
     public String dump() {
-        return null;
+        return "dump check";
     }
 
     @Override
     public void init(Config config, Log log, Object extended_arg) throws IllegalArgumentException {
 
     }
+
+//    public void getSession(SessionsSettings sessionsSettings) {
+//        this.sessionsSettings = sessionsSettings;
+//        System.out.println("MyConfig : " + sessionsSettings);
+//    }
+
+    private class GetCredUrl extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... voids) {
+            URL url;
+            try {
+                System.out.println("result test " + result);
+                url = new URL(credUrl);
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(url.openStream()));
+                String stringBuffer;
+                String string = "";
+                while ((stringBuffer = bufferedReader.readLine()) != null){
+                    string = String.format("%s%s", string, stringBuffer);
+//                    check = true;
+                }
+                bufferedReader.close();
+                result = string;
+                System.out.println("result run " + result);
+
+//                InputStream test = new InputStreamReader(url.openStream());
+//                credentials = GoogleCredentials.fromStream(test);
+            } catch (IOException e){
+                e.printStackTrace();
+                result = e.toString();
+                System.out.println("result ex " + result);
+            }
+            return null;
+        }
+    }
+
 }

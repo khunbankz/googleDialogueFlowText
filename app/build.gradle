@@ -29,6 +29,11 @@ android {
         exclude 'META-INF/DEPENDENCIES'
         exclude 'META-INF/INDEX.LIST'
     }
+    configurations.all {
+        resolutionStrategy.dependencySubstitution {
+            substitute module('org.hamcrest:hamcrest-core:1.1') with module('junit:junit:4.10')
+        }
+    }
 }
 
 dependencies {
@@ -37,6 +42,8 @@ dependencies {
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
     implementation project(path: ':Dialogflow')
+
+    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
 
 //    implementation 'com.google.oauth-client:google-oauth-client:1.32.1'
 //    implementation 'net.openid:appauth:0.10.0'
