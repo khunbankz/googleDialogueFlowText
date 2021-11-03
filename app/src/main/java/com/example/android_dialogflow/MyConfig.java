@@ -13,12 +13,20 @@ import th.co.ais.genesis.blueprint.log.Log;
 
 public class MyConfig implements Config {
     final String credUrl =
-            "https://raw.githubusercontent.com/Weerapat1455/And_cred/main/credential.json?token=AOKNYQ4OZSB4HQHAUB67ZOTBP6V7W";
+            "https://raw.githubusercontent.com/Weerapat1455/And_cred/main/credential.json";
     private String result;
 //    private boolean check = false;
 
     @Override
     public Integer getAsInteger(String name) {
+        if (name.equals("maxInputLength")) {
+            int maxInputLength = 7;
+            return maxInputLength;
+        }
+        if (name.equals("maxResponseTime")) {
+            int maxInputLength = 5;
+            return maxInputLength;
+        }
         return null;
     }
 
@@ -80,10 +88,6 @@ public class MyConfig implements Config {
             language = "en";
 //            language = "th";
             return language;
-        }
-        if (name.equals("maxInputLength")) {
-            int maxInputLength = 7;
-            return String.valueOf(maxInputLength);
         }
         return null;
     }

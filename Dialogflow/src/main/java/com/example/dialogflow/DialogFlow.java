@@ -4,6 +4,7 @@ import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.rpc.ApiException;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
+import com.google.cloud.dialogflow.v2.Context;
 import com.google.cloud.dialogflow.v2.DetectIntentResponse;
 import com.google.cloud.dialogflow.v2.QueryInput;
 import com.google.cloud.dialogflow.v2.QueryResult;
@@ -33,6 +34,7 @@ public class DialogFlow implements DialogueInputText {
     private Log log;
     private Config config;
 
+//    private static final String TAG = String.format("DialogFlow %s", sessionId);
     private static final String TAG = "DialogFlow";
 
     public String requestTextInput;
@@ -52,7 +54,15 @@ public class DialogFlow implements DialogueInputText {
 //    private String projectId = "android-dialogflow-qrtf";
     private String languageCode;
 
-    private String checkedResult;
+    private long startTimeMilli;
+    private long endTimeMilli;
+
+    public boolean timeReach;
+    private String lastQueryFullfillText;
+
+    private List<Context> queryContext;
+
+//    private String checkedResult;
 
     @Override
     public void open(ResultListener listener) {
@@ -68,18 +78,52 @@ public class DialogFlow implements DialogueInputText {
 
         requestTextInput = input;
 
-        String checkedInput = checkInput(requestTextInput);
-        if (checkedInput != "not pass") {
+        boolean checkedInput = checkInput(requestTextInput);
+        if (checkedInput == true) {
             //        android.util.Log.d("DialogRequest", "sessionId: " + sessionId  + " | request text: " + requestTextInput);
             this.log.info(TAG, "sessionId: " + sessionId  + " | request text: " + requestTextInput);
             text.add(input);
             requestMap = new HashMap<>();
+            startTimeMilli = System.currentTimeMillis();
+
+//            class count extends AsyncTask<Integer, Void, Boolean> {
+//
+//                @Override
+//                protected Boolean doInBackground(Integer... integers) {
+//                    return null;
+//                }
+//            }
+
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    timeReach = false;
+                    startTimeMilli = System.currentTimeMillis();
+                    System.out.println(String.valueOf(startTimeMilli));
+                    while (true) {
+                        if (System.currentTimeMillis() > startTimeMilli+5000) {
+                            System.out.println(String.format("Timeout Reach"));
+                            timeReach = true;
+                            break;
+                        }
+//                        else {
+//                            timeReach = false;
+//                            System.out.println("PASS");
+//                            break;
+//                        }
+                    }
+                }
+            });
+//            thread.start();
 
             try {
                 requestMap.putAll(detectIntentTexts(projectId, sessionId, text, languageCode));
+//                checkResponseTime();
 
                 queryFullfillText = requestMap.get(input).getFulfillmentText();
                 queryConfidenceScore = requestMap.get(input).getIntentDetectionConfidence();
+                queryContext = requestMap.get(input).getOutputContextsList();
+                System.out.println(queryContext);
 
                 //            System.out.format("Agent: %s\n", queryFullfillText);
                 this.log.info(TAG, "Agent Response: " + queryFullfillText);
@@ -87,41 +131,96 @@ public class DialogFlow implements DialogueInputText {
                 this.log.info(TAG, "Confidence Score: " + queryConfidenceScore);
 
                 this.listener.OnResult(queryFullfillText, queryConfidenceScore, "");
+                endTimeMilli = System.currentTimeMillis();
+                this.log.debug(TAG, String.format("Response Time = %d", endTimeMilli-startTimeMilli));
+
+                this.log.info(TAG, "End conver detect: " + requestMap.get(input).getDiagnosticInfo().containsFields("end_conversation"));
+                if (requestMap.get(input).getDiagnosticInfo().containsFields("end_conversation") == true) {
+                    this.log.debug(TAG, "END DETECTED");
+                    init(this.config, this.log, this.credentials_test_google);
+                }
+
             } catch (Exception e) {
                 e.printStackTrace();
+                this.log.warn(TAG, e);
+                System.out.println("!!!!!!!");
             }
+
+            System.out.println(lastQueryFullfillText);
+//            System.out.println(timeReach);
+//            if (timeReach == true && queryFullfillText == lastQueryFullfillText) {
+//                lastQueryFullfillText = queryFullfillText;
+//                this.log.error(TAG, "TIMEOUT");
+//            } else lastQueryFullfillText = queryFullfillText;
+
+            if (lastQueryFullfillText != queryFullfillText) {
+                this.log.debug(TAG, "PASS");
+                lastQueryFullfillText = queryFullfillText;
+            }
+            else if (queryFullfillText == lastQueryFullfillText){
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                if (queryFullfillText == lastQueryFullfillText) {
+                    lastQueryFullfillText = queryFullfillText;
+                    this.log.error(TAG, "TIMEOUT : no response received");
+                }
+            }
+//            else if (System.currentTimeMillis() > startTimeMilli+5000 & queryFullfillText == lastQueryFullfillText){
+//                lastQueryFullfillText = queryFullfillText;
+//                this.log.error(TAG, "TIMEOUT");
+//            }
+
+            //            else {
+//                lastQueryFullfillText = queryFullfillText;
+//                this.log.debug(TAG, "PASS");
+//            }
 
             //        System.out.format("End conver detect: '%s'\n", requestMap.get(input).getDiagnosticInfo().containsFields("end_conversation"));
 //            this.log.info(TAG, String.format("Context: %s", requestMap.get(input).getOutputContextsCount() > 0
 //                    ? requestMap.get(input).getOutputContexts(0)
 //                    : "no context"));
-            this.log.info(TAG, "End conver detect: " + requestMap.get(input).getDiagnosticInfo().containsFields("end_conversation"));
-            if (requestMap.get(input).getDiagnosticInfo().containsFields("end_conversation") == true) {
-                this.log.debug(TAG, "END DETECTED");
-                init(this.config, this.log, this.credentials_test_google);
-            }
         } else {
-            this.log.error(TAG, "Input text does not meet Dialogflow requirement");
+            this.log.error(TAG, "Input does not meet Dialogflow requirement");
         }
     }
 
-    public String checkInput(String text) {
-        int maxInputLength = Integer.parseInt(this.config.get("maxInputLength"));
+    private boolean checkInput(String text) {
+        boolean checkedInput;
+        int maxInputLength = this.config.getAsInteger("maxInputLength");
         int countText = text.length();
         this.log.debug(TAG, String.format("Input text Length = %d", countText));
 
-        if (text.isEmpty()) {
-            checkedResult = "not pass";
+        if (text.isEmpty() || text.equals(" ")) {
+            checkedInput = false;
             this.log.error(TAG, "Please input text");
         }
-        if (text.length() > 0)
-            if (text.length() <= maxInputLength) checkedResult = text;
+        if (text.length() > 0 && !text.equals(" "))
+            if (text.length() <= maxInputLength) checkedInput = true;
             else {
-                checkedResult = "not pass";
+                checkedInput = false;
                 this.log.error(TAG, String.format("Your input is %d, the maximum limit is %d", countText, maxInputLength));
             }
-        else checkedResult = "not pass";
-        return checkedResult;
+        else checkedInput = false;
+        return checkedInput;
+    }
+
+    private boolean checkResponseTime () {
+        startTimeMilli = System.currentTimeMillis();
+        this.log.debug(TAG, String.valueOf(startTimeMilli));
+        while (true) {
+            if (System.currentTimeMillis() > startTimeMilli+5000 && queryFullfillText == null) {
+                this.log.error(TAG, String.format("Timeout"));
+                break;
+            }
+            if (queryFullfillText != null) {
+                this.log.debug(TAG, "PASS");
+                break;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -139,22 +238,25 @@ public class DialogFlow implements DialogueInputText {
         this.log.debug(TAG, "init invoked");
 
         credentials_test = this.config.get("getCredentials");
-        System.out.println("credentials_test : " + credentials_test);
-        InputStream stream = new ByteArrayInputStream(credentials_test.getBytes(StandardCharsets.UTF_8));
-//        InputStream stream = new ByteArrayInputStream(credentials_test.getBytes());
-//        System.out.println("1 " + stream);
-
-//        GoogleCredentials credentials = GoogleCredentials.fromStream(credentials_test);
+//        System.out.println("credentials_test : " + credentials_test);
+        InputStream cred_stream = new ByteArrayInputStream(credentials_test.getBytes(StandardCharsets.UTF_8));
         try {
-            credentials_test_google = GoogleCredentials.fromStream(stream);
-            System.out.println("credentials_test_google : " + credentials_test_google);
+            credentials_test_google = GoogleCredentials.fromStream(cred_stream);
+//            SessionsSettings.Builder settingsBuilder = SessionsSettings.newBuilder();
+//            SessionsSettings sessionsSettings = settingsBuilder.setCredentialsProvider(FixedCredentialsProvider.create(credentials_test_google)).build();
+//            sessionId = UUID.randomUUID().toString();
+//            session = SessionName.of(projectId, sessionId);
+////        SessionName session = SessionName.of(projectId, sessionId);
+//            sessionsClient = SessionsClient.create(sessionsSettings);
         } catch (IOException e) {
             e.printStackTrace();
+            this.log.warn(TAG, e);
+            System.out.println("!!!!!!!");
         }
 
+        this.log.debug(TAG, "credentials_test_google : " + credentials_test_google);
 //        projectId = ((ServiceAccountCredentials)credentials).getProjectId();
         projectId = ((ServiceAccountCredentials)credentials_test_google).getProjectId();
-//        System.out.println("projectId (DialogFlow_module) : " + projectId);
         this.log.info(TAG, "projectId (DialogFlow_module) : " + projectId);
 
         this.languageCode = this.config.get("languageCode");
@@ -169,12 +271,9 @@ public class DialogFlow implements DialogueInputText {
         sessionsClient = SessionsClient.create(sessionsSettings);
         } catch (IOException e) {
             e.printStackTrace();
+            this.log.warn(TAG, e);
         }
-//        System.out.println("Session Path: " + session.toString());
         this.log.debug(TAG, "Session Path: " + session.toString());
-
-//        System.out.println("Config = " + config);
-        this.log.debug(TAG, "Config = " + config);
     }
 
     public Map<String, QueryResult> detectIntentTexts(
@@ -190,12 +289,17 @@ public class DialogFlow implements DialogueInputText {
             // Set the text (hello) and language code (en-US) for the query
             TextInput.Builder textInput =
                     TextInput.newBuilder().setText(text).setLanguageCode(languageCode);
+//            TextInput.Builder textInput =
+//                    TextInput.newBuilder().setField(Context context, queryContext);
 
             // Build the query with the TextInput
             QueryInput queryInput = QueryInput.newBuilder().setText(textInput).build();
+//            QueryInput queryInput1 = QueryInput.newBuilder().;
+            System.out.println(queryInput);
 
             // Performs the detect intent request
             DetectIntentResponse response = sessionsClient.detectIntent(session, queryInput);
+            System.out.println(response);
 
             // Display the query result
             QueryResult queryResult = response.getQueryResult();
