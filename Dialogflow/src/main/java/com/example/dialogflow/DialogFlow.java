@@ -80,41 +80,10 @@ public class DialogFlow implements DialogueInputText {
 
         boolean checkedInput = checkInput(requestTextInput);
         if (checkedInput == true) {
-            //        android.util.Log.d("DialogRequest", "sessionId: " + sessionId  + " | request text: " + requestTextInput);
             this.log.info(TAG, "sessionId: " + sessionId  + " | request text: " + requestTextInput);
             text.add(input);
             requestMap = new HashMap<>();
             startTimeMilli = System.currentTimeMillis();
-
-//            class count extends AsyncTask<Integer, Void, Boolean> {
-//
-//                @Override
-//                protected Boolean doInBackground(Integer... integers) {
-//                    return null;
-//                }
-//            }
-
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    timeReach = false;
-                    startTimeMilli = System.currentTimeMillis();
-                    System.out.println(String.valueOf(startTimeMilli));
-                    while (true) {
-                        if (System.currentTimeMillis() > startTimeMilli+5000) {
-                            System.out.println(String.format("Timeout Reach"));
-                            timeReach = true;
-                            break;
-                        }
-//                        else {
-//                            timeReach = false;
-//                            System.out.println("PASS");
-//                            break;
-//                        }
-                    }
-                }
-            });
-//            thread.start();
 
             try {
                 requestMap.putAll(detectIntentTexts(projectId, sessionId, text, languageCode));
@@ -166,6 +135,7 @@ public class DialogFlow implements DialogueInputText {
                 if (queryFullfillText == lastQueryFullfillText) {
                     lastQueryFullfillText = queryFullfillText;
                     this.log.error(TAG, "TIMEOUT : no response received");
+                    this.listener.OnResult("TIMEOUT : no response received", 0.0, "");
                 }
             }
 //            else if (System.currentTimeMillis() > startTimeMilli+5000 & queryFullfillText == lastQueryFullfillText){
@@ -184,6 +154,7 @@ public class DialogFlow implements DialogueInputText {
 //                    : "no context"));
         } else {
             this.log.error(TAG, "Input does not meet Dialogflow requirement");
+            this.listener.OnResult("Input does not meet Dialogflow requirement", 0.0, "");
         }
     }
 
@@ -242,12 +213,13 @@ public class DialogFlow implements DialogueInputText {
         InputStream cred_stream = new ByteArrayInputStream(credentials_test.getBytes(StandardCharsets.UTF_8));
         try {
             credentials_test_google = GoogleCredentials.fromStream(cred_stream);
-//            SessionsSettings.Builder settingsBuilder = SessionsSettings.newBuilder();
-//            SessionsSettings sessionsSettings = settingsBuilder.setCredentialsProvider(FixedCredentialsProvider.create(credentials_test_google)).build();
+
+            SessionsSettings.Builder settingsBuilder = SessionsSettings.newBuilder();
+            SessionsSettings sessionsSettings = settingsBuilder.setCredentialsProvider(FixedCredentialsProvider.create(credentials_test_google)).build();
 //            sessionId = UUID.randomUUID().toString();
 //            session = SessionName.of(projectId, sessionId);
 ////        SessionName session = SessionName.of(projectId, sessionId);
-//            sessionsClient = SessionsClient.create(sessionsSettings);
+            sessionsClient = SessionsClient.create(sessionsSettings);
         } catch (IOException e) {
             e.printStackTrace();
             this.log.warn(TAG, e);
@@ -259,20 +231,24 @@ public class DialogFlow implements DialogueInputText {
         projectId = ((ServiceAccountCredentials)credentials_test_google).getProjectId();
         this.log.info(TAG, "projectId (DialogFlow_module) : " + projectId);
 
-        this.languageCode = this.config.get("languageCode");
-        this.log.info(TAG, "languageCode : " + languageCode);
-
-        try {
-        SessionsSettings.Builder settingsBuilder = SessionsSettings.newBuilder();
-        SessionsSettings sessionsSettings = settingsBuilder.setCredentialsProvider(FixedCredentialsProvider.create(credentials_test_google)).build();
         sessionId = UUID.randomUUID().toString();
         session = SessionName.of(projectId, sessionId);
 //        SessionName session = SessionName.of(projectId, sessionId);
-        sessionsClient = SessionsClient.create(sessionsSettings);
-        } catch (IOException e) {
-            e.printStackTrace();
-            this.log.warn(TAG, e);
-        }
+
+        this.languageCode = this.config.get("languageCode");
+        this.log.info(TAG, "languageCode : " + languageCode);
+
+//        try {
+//        SessionsSettings.Builder settingsBuilder = SessionsSettings.newBuilder();
+//        SessionsSettings sessionsSettings = settingsBuilder.setCredentialsProvider(FixedCredentialsProvider.create(credentials_test_google)).build();
+//        sessionId = UUID.randomUUID().toString();
+//        session = SessionName.of(projectId, sessionId);
+////        SessionName session = SessionName.of(projectId, sessionId);
+//        sessionsClient = SessionsClient.create(sessionsSettings);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            this.log.warn(TAG, e);
+//        }
         this.log.debug(TAG, "Session Path: " + session.toString());
     }
 
