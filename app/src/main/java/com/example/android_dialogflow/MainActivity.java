@@ -1,6 +1,5 @@
 package com.example.android_dialogflow;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -14,15 +13,14 @@ import com.example.dialogflow.DialogFactory;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.dialogflow.v2.SessionsSettings;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.ArrayList;
 
 import th.co.ais.genesis.blueprint.dialogue.DialogueInputText;
 import th.co.ais.genesis.blueprint.dialogue.ResultListener;
+
+//import android.net.ConnectivityManager;
+//import android.net.NetworkInfo;
 
 public class MainActivity extends AppCompatActivity {
     private SessionsSettings sessionsSettings;
@@ -36,30 +34,102 @@ public class MainActivity extends AppCompatActivity {
 //    TestDialogflow dialogTest = new TestDialogflow();
 //    DialogFlow dialogFlow = new DialogFlow();
 
-//    final String strMessage = "https://sites.google.com/site/androidersite/text.txt";
-//    final String strMessage = "https://doc-0k-as-docs.googleusercontent.com/docs/securesc/9mumr0t6btu25dm723utun3577dma7eo/1ll1qts37c4hl1dstph920s6a9np4916/1635492600000/07219187782740445536/06797400023169037954Z/1d6uqRhFRu_ykQOP9u4ZFYxXsuzpTVA0q?e=download&nonce=33qf54mr18agc&user=06797400023169037954Z&hash=fq7qcs2pb2pk6erj5f8qnphqfdbqdprb";
-//    final String strMessage = "https://raw.githubusercontent.com/Weerapat1455/And_cred/42ca2990841c96eb29bee1eec88cdfdbde28257e/credential.json";
-    final String strMessage = "https://raw.githubusercontent.com/Weerapat1455/And_cred/main/credential.json?token=AOKNYQ2R5CTUBZWAQZE6DWDBPOUGS";
+//    final String credUrl =
+//            "https://drive.google.com/uc?id=10edZa3D8Sw-AZYP6UMfekDHMEj_q2aEz";
+//    private String result;
+
+    DialogueInputText dialogueInputText;
+
+//    private final OkHttpClient client = new OkHttpClient();
+//
+//    public void whenAsynchronousGetRequest_thenCorrect() {
+//        Request request = new Request.Builder()
+//                .url(credUrl)
+//                .build();
+//
+//        okhttp3.Call call = client.newCall(request);
+//        call.enqueue(new okhttp3.Callback() {
+//            @Override
+//            public void onResponse(@NonNull okhttp3.Call call, @NonNull okhttp3.Response response) throws IOException {
+//                System.out.println(response.body().string());
+//            }
+//
+//            @Override
+//            public void onFailure(@NonNull okhttp3.Call call, @NonNull IOException e) {
+//                fail();
+//            }
+//        });
+//    }
+
+//    private void getCred() {
+//        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+//                .connectTimeout(1, TimeUnit.MINUTES)
+//                .readTimeout(30, TimeUnit.SECONDS)
+//                .writeTimeout(15, TimeUnit.SECONDS)
+//                .build();
+//        Retrofit retrofit = new Retrofit.Builder()
+//                .baseUrl("https://drive.google.com/")
+//                .client(okHttpClient)
+//                .addConverterFactory(GsonConverterFactory.create())
+////                .addConverterFactory(ScalarsConverterFactory.create())
+//                .build();
+//        System.out.println(retrofit);
+//
+//        RetrofitAPI retrofitAPI = retrofit.create(RetrofitAPI.class);
+//
+////        Call call = client.newCall(request);
+////        call.enqueue(new Callback() {
+////            public void onResponse(Call call, Response response) throws IOException {
+////                try (ResponseBody responseBody = response.body()) {
+////
+////                }
+////            }
+////
+////            public void onFailure(Call call, IOException e) {
+////            }
+//        Call<MyConfig> call = retrofitAPI.getCred();
+////        MyConfig call = retrofitAPI.getCred(new MyConfig());
+//
+//        call.enqueue(new Callback<MyConfig>() {
+//            @Override
+//            public void onResponse(Call<MyConfig> call, Response<MyConfig> response) {
+//                if (response.isSuccessful()) {
+//                    System.out.println("x "+response.code());
+////                    response.body().string();
+//                    MyConfig modal = response.body();
+//                    System.out.println(modal.getType());
+//                    System.out.println(modal.getProjectId());
+//                    System.out.println(modal.getClientId());
+////                    System.out.println("x "+response.body().string());
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<MyConfig> call, Throwable t) {
+//                System.out.println("FAILED");
+//
+//            }
+//        });
+//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        initDialogflow();
-
-//        JSONParser parser = new JSONParser();
-//
-//        try (Reader reader = new FileReader("/Users/terr/Documents/DataAI/Android/credential.json")) {
-//
-//            JSONObject jsonObject = (JSONObject) parser.parse(reader);
-//            System.out.println(jsonObject);
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } catch (ParseException e) {
-//            e.printStackTrace();
+//        boolean connected;
+//        ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+//        if(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+//                connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
+//            //we are connected to a network
+//            connected = true;
 //        }
+//        else
+//            connected = false;
+//
+//        System.out.println("connection = " + connected);
+
+//        initDialogflow();
 
 //        MyConfig getConfig = new MyConfig();
 //        getConfig.get("setCredentials");
@@ -67,54 +137,10 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<String> otherConfig = new ArrayList<>();
 //        otherConfig.add(sessionsSettings);
 
-        DialogueInputText dialogueInputText = new DialogFactory().create();
-//        dialogueInputText.init(new MyConfig(), new MyLog(), otherConfig);         //ori
-//        dialogueInputText.init(new MyConfig(), new MyLog(), sessionsSettings);    //pass sessionsSettings
-        dialogueInputText.init(new MyConfig(), new MyLog(), otherConfig);           //pass credentials
+        TextView requestTextview = findViewById(R.id.requestTextview);
+        TextView responseTextview = findViewById(R.id.responseTextview);
 
-
-        //        dialogTest.getSession(sessionsSettings);
-//                dialogTest.DetectIntentTexts("hi");
-//        dialogFlow.getSession(sessionsSettings, session, sessionId);
-//        dialogFlow.getSession(sessionsSettings);
-
-//        new MyTask().execute();
-//
-//        class fetch extends Thread {
-//            String data =  "";
-//            @Override
-//            public void run() {
-//
-//                ArrayList<String> nameList = null;
-//
-//                try {
-//                    URL url = new URL("https://drive.google.com/file/d/1d6uqRhFRu_ykQOP9u4ZFYxXsuzpTVA0q/view?usp=sharing");
-//                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-//                    InputStream stream = connection.getInputStream();
-//                    BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-//                    StringBuffer buffer = new StringBuffer();
-//                    String line = "";
-//                    while ((line = reader.readLine()) != null) {
-////                    buffer.append(line + "\n");
-//                        data = data+line;
-//                        Log.d("Response: ", "> " + line);   //here u ll get whole response...... :-)
-//                    }
-//                    if (!data.isEmpty()){
-//                        JSONObject jsonObject = new JSONObject(data);
-//                        JSONArray test = jsonObject.getJSONArray("project_id");
-//                        JSONObject names = test.getJSONObject(0);
-//                        String name = names.getString("project_id");
-//                        nameList.add(name);
-//                    }
-//                } catch (IOException | JSONException e) {
-//                    e.printStackTrace();
-//                }
-////        System.out.println("urls" + buffer.toString(););
-//                System.out.println("urls" + data);
-////        System.out.println("urls" + Arrays.toString(nameList));
-//            }
-//        }
-
+        dialogueInputText = new DialogFactory().create();
         dialogueInputText.open(new ResultListener() {
             @Override
             public void OnResult(String text, double confident, String more) {
@@ -123,6 +149,19 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("Android_Main", "message = " + resultResponse + ", confidence = " + resultConfident);
             }
         });
+        dialogueInputText.init(new MyConfig(), new MyLog(), otherConfig);         //ori
+////        dialogueInputText.init(new MyConfig(), new MyLog(), sessionsSettings);    //pass sessionsSettings
+////        dialogueInputText.init(new MyConfig(), new MyLog(), credentials);           //pass credentials
+//
+        requestTextview.setText(resultResponse);
+        responseTextview.setText("");
+//
+//        //        dialogTest.getSession(sessionsSettings);
+////                dialogTest.DetectIntentTexts("hi");
+////        dialogFlow.getSession(sessionsSettings, session, sessionId);
+////        dialogFlow.getSession(sessionsSettings);
+
+
 //        dialogueInputText.speech("hello");
 
         EditText txtname = findViewById(R.id.textInput);
@@ -141,48 +180,88 @@ public class MainActivity extends AppCompatActivity {
                 //        Test test = new Test();
 //        String print = test.print();
 
-                TextView requestTextview = findViewById(R.id.requestTextview);
+//                TextView requestTextview = findViewById(R.id.requestTextview);
 //        requestTextview.setText("Request : " + print);
                 requestTextview.setText("Request : " + textInput);
 
 //        String result = TestDialogflow.detectIntentTexts();
 
-                TextView responseTextview = findViewById(R.id.responseTextview);
+//                TextView responseTextview = findViewById(R.id.responseTextview);
                 responseTextview.setText("Response : " + resultResponse + "\nConfidence score : " + resultConfident);
 
             }
         });
     }
 
-    private class MyTask extends AsyncTask<Void, Void, Void> {
-        String result;
-        @Override
-        protected Void doInBackground(Void... voids) {
-            URL url;
-            try {
-                System.out.println("result test " + result);
-                url = new URL(strMessage);
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(url.openStream()));
-                String stringBuffer;
-                String string = "";
-                while ((stringBuffer = bufferedReader.readLine()) != null){
-                    string = String.format("%s%s", string, stringBuffer);
-                }
-                bufferedReader.close();
-                result = string;
-                System.out.println("result run " + result);
-            } catch (IOException e){
-                e.printStackTrace();
-                result = e.toString();
-                System.out.println("result ex " + result);
-            }
-            return null;
-        }
-    }
+//    private class GetCredUrl extends AsyncTask<Void, Void, Void> {
+//        @Override
+//        protected Void doInBackground(Void... voids) {
+//            URL url;
+//            try {
+//                System.out.println("result test " + result);
+//                url = new URL(credUrl);
+//                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(url.openStream()));
+//                String stringBuffer;
+//                String string = "";
+//                while ((stringBuffer = bufferedReader.readLine()) != null){
+//                    string = String.format("%s%s", string, stringBuffer);
+////                    check = true;
+//                }
+//                bufferedReader.close();
+//                result = string;
+//                System.out.println("result GetCredUrl " + result);
+//
+////                InputStream test = new InputStreamReader(url.openStream());
+////                credentials = GoogleCredentials.fromStream(test);
+//            } catch (IOException e){
+//                e.printStackTrace();
+//                result = e.toString();
+//                System.out.println("result ex " + result);
+//            }
+//            return null;
+//        }
+//    }
 
     @Override
     protected void onStart() {
         super.onStart();
+//        dialogueInputText.open(new ResultListener() {
+//            @Override
+//            public void OnResult(String text, double confident, String more) {
+//                resultResponse = text;
+//                resultConfident = confident;
+//                Log.d("Android_Main", "message = " + resultResponse + ", confidence = " + resultConfident);
+//            }
+//        });
+////        dialogueInputText.speech("hello");
+//
+//        EditText txtname = findViewById(R.id.textInput);
+//        Button buttonSubmit = findViewById(R.id.buttonSubmit);
+//        buttonSubmit.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                String textInput = txtname.getText().toString();
+////                result.setText("Name:\t" + name + "\nPassword:\t" + password );
+//                Log.d("Android_Main", "Input text : " + textInput);
+//
+////                dialogueInputText.speech("hi");
+////                dialogFlow.speech("textInput");
+//                dialogueInputText.speech(textInput);
+//
+//                //        Test test = new Test();
+////        String print = test.print();
+//
+//                TextView requestTextview = findViewById(R.id.requestTextview);
+////        requestTextview.setText("Request : " + print);
+//                requestTextview.setText("Request : " + textInput);
+//
+////        String result = TestDialogflow.detectIntentTexts();
+//
+//                TextView responseTextview = findViewById(R.id.responseTextview);
+//                responseTextview.setText("Response : " + resultResponse + "\nConfidence score : " + resultConfident);
+//
+//            }
+//        });
     }
 
     @Override
@@ -214,4 +293,47 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
+//    private void checkConnection() {
+//
+//        // initialize intent filter
+//        IntentFilter intentFilter = new IntentFilter();
+//
+//        // add action
+//        intentFilter.addAction("android.new.conn.CONNECTIVITY_CHANGE");
+//
+//        // register receiver
+//        registerReceiver(new ConnectionReceiver(), intentFilter);
+//
+//        // Initialize listener
+//        ConnectionReceiver.Listener = (ConnectionReceiver.ReceiverListener) this;
+//
+//        // Initialize connectivity manager
+//        ConnectivityManager manager = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+//
+//        // Initialize network info
+//        NetworkInfo networkInfo = manager.getActiveNetworkInfo();
+//
+//        // get connection status
+//        boolean isConnected = networkInfo != null && networkInfo.isConnectedOrConnecting();
+//
+//        System.out.println(isConnected);
+//
+//    }
+//    public static boolean checkConnection(Context context) {
+//        final ConnectivityManager connMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+//
+//        if (connMgr != null) {
+//            NetworkInfo activeNetworkInfo = connMgr.getActiveNetworkInfo();
+//
+//            if (activeNetworkInfo != null) { // connected to the internet
+//                // connected to the mobile provider's data plan
+//                if (activeNetworkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+//                    // connected to wifi
+//                    return true;
+//                } else return activeNetworkInfo.getType() == ConnectivityManager.TYPE_MOBILE;
+//            }
+//        }
+//        return false;
+//    }
 }

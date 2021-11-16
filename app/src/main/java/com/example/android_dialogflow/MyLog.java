@@ -43,7 +43,7 @@ public class MyLog implements Log {
 
     @Override
     public void warn(String tag, Exception exception) {
-        android.util.Log.e("test_" + tag, "message = " + exception);
+        android.util.Log.w("test_" + tag, "message = " + exception);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class MyLog implements Log {
 
     @Override
     public void error(String tag, Exception exception) {
-
+        android.util.Log.e("test_" + tag, "exception = " + exception);
     }
 
     @Override
