@@ -32,7 +32,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.3.1'
     implementation 'com.google.android.material:material:1.4.0'
 
-    api 'th.co.ais.genesis:sdk-interface:1.0.7-SNAPSHOT'
+    api 'th.co.ais.genesis:sdk-interface:1.0.8-SNAPSHOT'
 
 //    api 'com.google.cloud:google-cloud-dialogflow:2.1.0'  //error when separately run DetectIntent
 //    api 'io.grpc:grpc-okhttp:1.30.0'

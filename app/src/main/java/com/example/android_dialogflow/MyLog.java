@@ -67,6 +67,11 @@ public class MyLog implements Log {
     }
 
     @Override
+    public void notify(String topic, String message) {
+
+    }
+
+    @Override
     public void diagnose(Map<String, String> information, String message, Exception exception) {
 
     }
