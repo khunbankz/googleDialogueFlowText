@@ -15,18 +15,17 @@ import th.co.ais.genesis.blueprint.log.Log;
 
 public class MyConfig implements Config {
     final String credUrl =
-//            "https://raw.githubusercontent.com/Weerapat1455/And_cred/main/credential.json";
             "https://drive.google.com/uc?id=10edZa3D8Sw-AZYP6UMfekDHMEj_q2aEz";
     private int maxResponseTime;
     private String cred;
 
     @Override
     public Integer getAsInteger(String name) {
-        if (name.equals("maxInputLength")) {
-            int maxInputLength = 7;
+        if (name.equals("maxInputLength")) {        //set max input length
+            int maxInputLength = 15;
             return maxInputLength;
         }
-        if (name.equals("maxResponseTime")) {
+        if (name.equals("maxResponseTime")) {       //set max response time, both OkHTTP and Dialogflow
             maxResponseTime = 2;
             return maxResponseTime;
         }
@@ -71,7 +70,6 @@ public class MyConfig implements Config {
     @Override
     public String get(String name) {
         if (name.equals("getCredentials")) {
-//            final int[] statusCode = new int[1];
             OkHttpClient client = new OkHttpClient.Builder()
                     .callTimeout(maxResponseTime, TimeUnit.SECONDS)   // overall call
 //                    .connectTimeout(10, TimeUnit.SECONDS)
@@ -88,19 +86,15 @@ public class MyConfig implements Config {
             call.enqueue(new Callback() {
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
-//                    statusCode[0] = response.code();
                     System.out.println("response code "+response.code());
                     if (!response.isSuccessful()) {
                         System.out.println("error : response code = " + response.code());
                         throw new IOException("Unexpected code " + response);
                     } else {
                         System.out.println(response.receivedResponseAtMillis()-response.sentRequestAtMillis());    //404:false
-//                        System.out.println("isCanceled "+call.isCanceled());
                         cred = response.body().string();
                          System.out.println("cred\n" + cred);
-//                        System.out.println("isCanceled_o "+call.isCanceled());
                     }
-//                    System.out.println("isCanceled_o "+call.isCanceled());
                     countDownLatch.countDown();
                 }
                 @Override
@@ -108,7 +102,6 @@ public class MyConfig implements Config {
                     System.out.println("isCanceled(failure) "+call.isCanceled());
                     System.out.println("isExecuted(failure) "+call.isExecuted());
                     e.printStackTrace();
-//                    System.out.println("Timeout");
                     countDownLatch.countDown();
 
                 }

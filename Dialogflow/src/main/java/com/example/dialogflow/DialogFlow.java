@@ -37,31 +37,23 @@ public class DialogFlow implements DialogueInputText {
     private Log log;
     private Config config;
 
-//    private static final String TAG = String.format("DialogFlow %s", sessionId);
     private static final String TAG = DialogFlow.class.getSimpleName();
-    private static final String TAG_detectIntentTexts_method = "detectIntentTexts";
+//    private static final String TAG_detectIntentTexts_method = "detectIntentTexts";
 
     private String requestTextInput;
-//    private String lastRequestTextInput;
     private String queryText;
     private String queryFullfillText;
-//    private String lastQueryFullfillText;
     private double queryConfidenceScore;
 
     private String responseId;
-    private String lastResponseId;
 
     private String credentials;
-//    private GoogleCredentials credentials_google;
-//    private GoogleCredentials credentials;
 
     private SessionName session;
 //    private ContextName context;
     private SessionsClient sessionsClient;
     private String sessionId;
     private String projectId;
-//    private String projectId = "android-dialogflow-th-srfk";
-//    private String projectId = "android-dialogflow-qrtf";
     private String languageCode;
 
     private long startTimeMilli;
@@ -73,15 +65,13 @@ public class DialogFlow implements DialogueInputText {
     @Override
     public void open(ResultListener listener) {
         this.listener = listener;
-//        listener.OnResult();
     }
 
     @Override
     public void speech(String inputText) {
-        List<String> text = new ArrayList<String>();
+        List<String> text = new ArrayList<>();
         Map<String, QueryResult> requestMap;
 
-//        requestTextInput = input;
         this.log.info(TAG + " sessionId = " + sessionId, "Input text: " + inputText);
 
         boolean checkedInput = checkInput(inputText);
@@ -92,8 +82,7 @@ public class DialogFlow implements DialogueInputText {
             startTimeMilli = System.currentTimeMillis();
 
             try {
-                requestMap.putAll(detectIntentTexts(projectId, sessionId, text, languageCode));
-//                checkResponseTime();
+                requestMap.putAll(detectIntentTexts(text, languageCode));
 
                 queryText = requestMap.get(requestTextInput).getQueryText();
                 queryFullfillText = requestMap.get(requestTextInput).getFulfillmentText();
@@ -105,6 +94,10 @@ public class DialogFlow implements DialogueInputText {
                     queryContext = requestMap.get(inputText).getOutputContexts(0);
                     System.out.println("queryContext = " + queryContext);
                 }
+
+                this.log.debug(TAG, String.valueOf(requestMap.get(requestTextInput).getParameters()));
+                this.log.debug(TAG, String.valueOf(requestMap.get(requestTextInput).getParameters().getFieldsMap()));
+                this.log.debug(TAG, String.valueOf(requestMap.get(requestTextInput).getParameters().getFieldsMap().keySet()));
 
                 this.log.info(TAG + " sessionId = " + sessionId, "Query Text: " + queryText);
                 this.log.info(TAG + " sessionId = " + sessionId, "Agent Response: " + queryFullfillText);
@@ -120,45 +113,16 @@ public class DialogFlow implements DialogueInputText {
                     endConversation();
                 }
 
-//            } catch (InterruptedException | IOException e) {
             } catch (Exception e) {
                 e.printStackTrace();
-//                lastResponseId = responseId;
                 this.log.error(TAG, e);
                 this.log.error(TAG + " sessionId = " + sessionId, "Check connection");
                 this.listener.OnResult("Error : Check connection", 0.0, "");
                 System.out.println("speech !!!!!!!");
             }
 
-//            this.log.debug(TAG, "lastResponseId = " + lastResponseId);
-//            lastResponseId = responseId;
-
-//            if (lastRequestTextInput != requestTextInput && lastResponseId != responseId) {
-//            if (lastResponseId != responseId) {
-//                this.log.debug(TAG, "Received response from Dialogflow ");
-////                lastRequestTextInput = requestTextInput;
-//                lastResponseId = responseId;
-//            }
-//            else if (lastResponseId == responseId){
-//                int waitTime = this.config.getAsInteger("maxResponseTime");
-//                try {
-//                    Thread.sleep(waitTime);
-////                    speech(requestTextInput);
-////                    lastResponseId = responseId;
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//                if (lastResponseId == responseId) {
-////                    lastRequestTextInput = requestTextInput;
-//                    lastResponseId = responseId;
-//                    this.log.error(TAG, "TIMEOUT : no response received");
-//                    this.listener.OnResult("TIMEOUT : no response received", 0.0, "");
-//                } else {
-//                    this.log.debug(TAG, "Received response from Dialogflow ");
-//                }
-//            }
-//            else this.log.warn(TAG, "CHECK checkResponse");
-        } else {
+        }
+        else {
             this.log.error(TAG, "Input does not meet Dialogflow requirement");
             this.listener.OnResult("Input does not meet Dialogflow requirement", 0.0, "");
         }
@@ -179,13 +143,10 @@ public class DialogFlow implements DialogueInputText {
         this.log = log;
         this.config = config;
         int maxResponseTime = this.config.getAsInteger("maxResponseTime");
-//        this.sessionsSettings = (SessionsSettings) extended_arg;
-//        this.credentials = (GoogleCredentials) extended_arg;
 
         this.log.debug(TAG, "init invoked");
         if (credentials == null) {
-            credentials = this.config.get("getCredentials");          //String
-//            this.log.debug(TAG, "credentials_test : " + credentials);
+            credentials = this.config.get("getCredentials");    //String
             try {
                 InputStream credStream = new ByteArrayInputStream(credentials.getBytes(StandardCharsets.UTF_8));
                 GoogleCredentials credentialsGoogle = GoogleCredentials.fromStream(credStream);       //GoogleCred
@@ -216,26 +177,9 @@ public class DialogFlow implements DialogueInputText {
                 this.log.error(TAG, "init !!!!!!!");
                 this.log.error(TAG, e);
 //                this.listener.OnResult("(init) Error : Check connection", 0.0, "");        //check
-                this.listener.OnResult("ERROR GETTING CREDENTIAL\n check connection", 0.0, "");
+                this.listener.OnResult("ERROR GETTING CREDENTIAL\nCheck connection", 0.0, "");
             }
         }
-//        try {
-//            if (credentials != null) {
-//                InputStream credStream = new ByteArrayInputStream(credentials.getBytes(StandardCharsets.UTF_8));
-//                GoogleCredentials credentials_google = GoogleCredentials.fromStream(credStream);       //GoogleCred
-//                this.log.debug(TAG, "credentials_google : " + credentials_google);
-//
-//                SessionsSettings.Builder sessionsSettingsBuilder = SessionsSettings.newBuilder();
-//                sessionsSettingsBuilder
-//                        .setCredentialsProvider(FixedCredentialsProvider.create(credentials_google))
-//                        .detectIntentSettings()
-//                        .setRetrySettings(RetrySettings.newBuilder()
-//                                .setTotalTimeout(Duration.ofSeconds(maxResponseTime)).build());     //set max response time
-//                SessionsSettings sessionsSettings = sessionsSettingsBuilder.build();
-//                sessionsClient = SessionsClient.create(sessionsSettings);
-
-//        projectId = ((ServiceAccountCredentials)credentials).getProjectId();
-//                projectId = ((ServiceAccountCredentials)credentials_google).getProjectId();
 
         else {
             this.log.info(TAG, "projectId (DialogFlow_old) : " + projectId);
@@ -249,28 +193,10 @@ public class DialogFlow implements DialogueInputText {
             this.languageCode = this.config.get("languageCode");
             this.log.info(TAG, "languageCode : " + languageCode);
         }
-//            }
-//            else {
-//                this.log.error(TAG, "(init) Error : Check connection");
-////                checkCred();
-//                this.listener.OnResult("ERROR GETTING CREDENTIAL\n check connection", 0.0, "");
-//            }
-        }
-//        catch (Exception e) {
-//            this.listener.OnResult("(init) Error : Check connection", 0.0, "");        //check
-////            e.printStackTrace();
-//            this.log.error(TAG, "init !!!!!!!");
-//            this.log.error(TAG, e);
-//        }
-//    }
+    }
 
-//    private void checkCred() {
-//        this.listener.OnResult("ERROR GETTING CREDENTIAL\n check connection", 0.0, "");
-//    }
-
-    public Map<String, QueryResult> detectIntentTexts(
-            String projectId, String sessionId, List<String> texts, String languageCode)  // sessionId from string/session cred
-            throws IOException, ApiException, InterruptedException {
+    public Map<String, QueryResult> detectIntentTexts(List<String> texts, String languageCode)  // sessionId from string/session cred
+            throws ApiException {
         Map<String, QueryResult> queryResults = Maps.newHashMap();
 
         for (String text : texts) {
@@ -294,15 +220,11 @@ public class DialogFlow implements DialogueInputText {
     }
 
     private boolean checkInput(String text) {
-        boolean checkedInput = false;
+        boolean checkedInput;
         int maxInputLength = this.config.getAsInteger("maxInputLength");
         this.log.debug(TAG + " sessionId = " + sessionId, String.format("Input text Length = %d", text.length()));
 
-//        if (text.startsWith(" ") || text.endsWith(" ")) {
-//            text = text.trim();
-//            this.log.debug(TAG + " sessionId = " + sessionId, String.format("Trim text Length = %d", text.length()));
-//        }
-        if (Character.isWhitespace(text.charAt(0))) {
+        if (text.startsWith(" ") || text.endsWith(" ")) {
             text = text.trim();
             this.log.debug(TAG + " sessionId = " + sessionId, String.format("Trim text Length = %d", text.length()));
         }
@@ -324,19 +246,6 @@ public class DialogFlow implements DialogueInputText {
                 this.log.error(TAG + " sessionId = " + sessionId, "CHECK checkInput");
                 throw new IllegalStateException("Unexpected value: " + text);
         }
-
-//        if (text.isEmpty()) {
-////            checkedInput = false;
-////            this.log.error(TAG, "Please input text");
-////        }
-////        else if (text.length() > 0) {
-////            if (text.length() <= maxInputLength) checkedInput = true;
-//            else {
-//                checkedInput = false;
-//                this.log.error(TAG, String.format("Your input is %d, the maximum limit is %d", countText, maxInputLength));
-//            }
-//        }
-//        else this.log.error(TAG, "CHECK checkInput");
         requestTextInput = text;
         return checkedInput;
     }
