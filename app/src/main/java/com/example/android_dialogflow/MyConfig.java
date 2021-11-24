@@ -14,6 +14,8 @@ import th.co.ais.genesis.blueprint.configuration.Config;
 import th.co.ais.genesis.blueprint.log.Log;
 
 public class MyConfig implements Config {
+    Log log;
+
     final String credUrl =
             "https://drive.google.com/uc?id=10edZa3D8Sw-AZYP6UMfekDHMEj_q2aEz";
     private int maxResponseTime;
@@ -26,7 +28,7 @@ public class MyConfig implements Config {
             return maxInputLength;
         }
         if (name.equals("maxResponseTime")) {       //set max response time, both OkHTTP and Dialogflow
-            maxResponseTime = 2;
+            maxResponseTime = 5;
             return maxResponseTime;
         }
         return null;
@@ -110,6 +112,7 @@ public class MyConfig implements Config {
                 countDownLatch.await();
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                this.log.error("X : ", e);
             }
 //            System.out.println(cred);
             return cred;
@@ -152,7 +155,7 @@ public class MyConfig implements Config {
 
     @Override
     public String dump() {
-        return "dump check";
+        return null;
     }
 
     @Override
