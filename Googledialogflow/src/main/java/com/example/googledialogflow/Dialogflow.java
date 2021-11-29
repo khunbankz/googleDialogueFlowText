@@ -58,6 +58,7 @@ public class Dialogflow implements DialogueInputText{
     private  int length;
     //String oldmessage ;
     private int maximum;
+    private int timeoutsession;
     private String messageInput;
     //String projectIdhaha = "";
     private String messageOld;
@@ -153,7 +154,7 @@ public class Dialogflow implements DialogueInputText{
                                     .detectIntentSettings()
                                     .getRetrySettings()
                                     .toBuilder()
-                                    .setTotalTimeout(Duration.ofSeconds(1))
+                                    .setTotalTimeout(Duration.ofSeconds(timeoutsession))
                                     .build());
             sessionsSettings = settingsBuilder.setCredentialsProvider(FixedCredentialsProvider.create(credentials)).build();
         } catch (IOException e) {
@@ -316,6 +317,7 @@ public class Dialogflow implements DialogueInputText{
         this.sessionId =config.get("sesssionID");
         this.languageCode = config.get("language");
         this.maximum = config.getAsInteger("maximum");
+        this.timeoutsession = config.getAsInteger("timeout");
         //this.projectIdhaha=this.config.get("https://raw.githubusercontent.com/Sumethchan/credentials/679cf3d865edca3f6c5a0aeb9e2c9a56974d975a/application_default_credentials.json");
         //this.projectIdhaha = config.get("Hello");
         this.log=log;

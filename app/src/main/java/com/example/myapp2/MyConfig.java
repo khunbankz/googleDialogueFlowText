@@ -69,8 +69,16 @@ public class MyConfig implements Config {
 
     @Override
     public Integer getAsInteger(String name) {
-        int maximuninput = 256;
-        return maximuninput;
+        if (name == "maximum"){
+            int maximuninput = 256;
+            return maximuninput;
+        }else if(name=="timeout"){
+            int timeputsession = 3;
+            return timeputsession;
+        }
+        else {
+            return null;
+        }
     }
 
     @Override
@@ -115,7 +123,7 @@ public class MyConfig implements Config {
         String projectIdName;
         Context context ;
         String json;
-        //CountDownLatch countDownLatch = new CountDownLatch(1);
+        CountDownLatch countDownLatch = new CountDownLatch(1);
 
         if (value == "language"){
             return "th";
@@ -133,6 +141,7 @@ public class MyConfig implements Config {
             client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Request request, IOException e) {
+                    countDownLatch.countDown();
                     e.printStackTrace();
                     log.error("credential","check connection");
                 }
@@ -140,29 +149,22 @@ public class MyConfig implements Config {
                 @Override
                 public void onResponse(Response response) throws IOException {
                     if (response.isSuccessful()){
-                        String myResponse1 = response.body().string();
-//                        InputStream is = response.body().byteStream();
-//                        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
-//                        String stringBuffer;
-//                        String string = "";
-//                        while ((stringBuffer = bufferedReader.readLine()) != null){
-//                            string = String.format("%s%s", string, stringBuffer);
-//                        }
-//                        bufferedReader.close();
-//                        System.out.println("testbuffer"+string);
                         //countDownLatch.countDown();
+                        String myResponse1 = response.body().string();
+                        countDownLatch.countDown();
                         System.out.println("Test OK http on get:"+myResponse1);
                         googleCredential= myResponse1;
                     }
                 }
             });
-//            try {
-//                Thread.sleep(3000);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
+            try {
+                countDownLatch.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             System.out.println("Myconfig projectId: "+googleCredential);
             return googleCredential;
+
         }
         return null;
         //new getNames().execute();
@@ -319,109 +321,110 @@ public class MyConfig implements Config {
         //return sessionsSettings;
 
     }
-    private class getNames extends AsyncTask<Void, Void, Void> {
-        private SessionsSettings sessionsSettings;
-        private String credentialAsync;
-
-        //private String googleCredential;
-
-        @Override
-        public Void doInBackground(Void... voids) {
-//            Handler handler = new Handler();
-//            String jsonString = handler.httpServiceCall(url);
-            String result = null;
-            //String urlJson = "https://raw.githubusercontent.com/Sumethchan/credentials/679cf3d865edca3f6c5a0aeb9e2c9a56974d975a/application_default_credentials.json";
-            String urlJson = "https://drive.google.com/uc?id=11lAFE5kolY2J25NYQFcPafQ2o4ysxExh";
-            try {
-                System.out.println("requestUrl: "+urlJson);
-                URL url = new URL(urlJson);
-                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-                httpURLConnection.setRequestMethod("GET");
-                //InputStream inputStream = new BufferedInputStream(httpURLConnection.getInputStream());
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(url.openStream()));
-                GoogleCredentials credentials =GoogleCredentials.fromStream(url.openStream());
-                SessionsSettings.Builder settingsBuilder = SessionsSettings.newBuilder();
-                sessionsSettings = settingsBuilder.setCredentialsProvider(FixedCredentialsProvider.create(credentials)).build();
-                System.out.println("Credential1: "+credentials);
-
-                String stringBuffer;
-                String string = "";
-                while ((stringBuffer = bufferedReader.readLine()) != null){
-                    string = String.format("%s%s", string, stringBuffer);
-                }
-                bufferedReader.close();
-                result = string;
-                //googleCredential = result;
-                //this.credentialAsync = result;
-
-                //result = convertResultToString(inputStream);
-                System.out.println("result"+result);
-
-
-//                try {
-//                    ObjectMapper objectMapper = new ObjectMapper();
-//                    JsonNode jsonNode = objectMapper.readTree(result);
-//                    String projectIdName= jsonNode.get("project_id").asText();
-//                    //this.projectId = projectIdName;
-//                    System.out.println("Real project id: "+projectIdName);
-//                    System.out.println("jsonNode:"+jsonNode);
+//    private class getNames extends AsyncTask<Void, Void, Void> {
+//        private SessionsSettings sessionsSettings;
+//        private String credentialAsync;
 //
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }catch (ProtocolException e){
-                e.printStackTrace();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-                        OkHttpClient client = new OkHttpClient();
-            Request request = new Request.Builder().url("https://drive.google.com/uc?id=11lAFE5kolY2J25NYQFcPafQ2o4ysxExh").build();
-            client.newCall(request).enqueue(new Callback() {
-                @Override
-                public void onFailure(Request request, IOException e) {
-                    e.printStackTrace();
-                }
-
-                @Override
-                public void onResponse(Response response) throws IOException {
-                    if (response.isSuccessful()){
-                        String myResponse = response.body().string();
-                        InputStream is = response.body().byteStream();
-                        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
-                        //GoogleCredentials credentials =GoogleCredentials.fromStream(url.openStream());
-                        //SessionsSettings.Builder settingsBuilder = SessionsSettings.newBuilder();
-                        //sessionsSettings = settingsBuilder.setCredentialsProvider(FixedCredentialsProvider.create(credentials)).build();
-                        ///System.out.println("Credential1: "+credentials);
-
-//                        String stringBuffer;
-//                        String string = "";
-//                        while ((stringBuffer = bufferedReader.readLine()) != null){
-//                            string = String.format("%s%s", string, stringBuffer);
-//                        }
-//                        bufferedReader.close();
-                        googleCredential = myResponse;
-                        System.out.println("Test OK http:"+myResponse);
-                    }
-                }
-            });
-
-            //JSONObject jsonObject = new JSONObject(jsonString)
-            //System.out.println("jsonString: "+result);
-
-//            if(jsonString != null){
-//                try {
-//                    JSONObject jsonObject = new JSONObject(jsonString);
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
+//        //private String googleCredential;
 //
+//        @Override
+//        public Void doInBackground(Void... voids) {
+////            Handler handler = new Handler();
+////            String jsonString = handler.httpServiceCall(url);
+//            String result = null;
+//            //String urlJson = "https://raw.githubusercontent.com/Sumethchan/credentials/679cf3d865edca3f6c5a0aeb9e2c9a56974d975a/application_default_credentials.json";
+//            String urlJson = "https://drive.google.com/uc?id=11lAFE5kolY2J25NYQFcPafQ2o4ysxExh";
+//            try {
+//                System.out.println("requestUrl: "+urlJson);
+//                URL url = new URL(urlJson);
+//                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+//                httpURLConnection.setRequestMethod("GET");
+//                //InputStream inputStream = new BufferedInputStream(httpURLConnection.getInputStream());
+//                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(url.openStream()));
+//                GoogleCredentials credentials =GoogleCredentials.fromStream(url.openStream());
+//                SessionsSettings.Builder settingsBuilder = SessionsSettings.newBuilder();
+//                sessionsSettings = settingsBuilder.setCredentialsProvider(FixedCredentialsProvider.create(credentials)).build();
+//                System.out.println("Credential1: "+credentials);
+//
+//                String stringBuffer;
+//                String string = "";
+//                while ((stringBuffer = bufferedReader.readLine()) != null){
+//                    string = String.format("%s%s", string, stringBuffer);
+//                }
+//                bufferedReader.close();
+//                result = string;
+//                //googleCredential = result;
+//                //this.credentialAsync = result;
+//
+//                //result = convertResultToString(inputStream);
+//                System.out.println("result"+result);
+//
+//
+////                try {
+////                    ObjectMapper objectMapper = new ObjectMapper();
+////                    JsonNode jsonNode = objectMapper.readTree(result);
+////                    String projectIdName= jsonNode.get("project_id").asText();
+////                    //this.projectId = projectIdName;
+////                    System.out.println("Real project id: "+projectIdName);
+////                    System.out.println("jsonNode:"+jsonNode);
+////
+////                } catch (Exception e) {
+////                    e.printStackTrace();
+////                }
+//
+//            } catch (MalformedURLException e) {
+//                e.printStackTrace();
+//            }catch (ProtocolException e){
+//                e.printStackTrace();
 //            }
-
-            return null;
-        }
-    }
+//            catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//                        OkHttpClient client = new OkHttpClient();
+//            Request request = new Request.Builder().url("https://drive.google.com/uc?id=11lAFE5kolY2J25NYQFcPafQ2o4ysxExh").build();
+//            client.newCall(request).enqueue(new Callback() {
+//                @Override
+//                public void onFailure(Request request, IOException e) {
+//
+//                    e.printStackTrace();
+//                }
+//
+//                @Override
+//                public void onResponse(Response response) throws IOException {
+//                    if (response.isSuccessful()){
+//                        String myResponse = response.body().string();
+//                        InputStream is = response.body().byteStream();
+//                        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
+//                        //GoogleCredentials credentials =GoogleCredentials.fromStream(url.openStream());
+//                        //SessionsSettings.Builder settingsBuilder = SessionsSettings.newBuilder();
+//                        //sessionsSettings = settingsBuilder.setCredentialsProvider(FixedCredentialsProvider.create(credentials)).build();
+//                        ///System.out.println("Credential1: "+credentials);
+//
+////                        String stringBuffer;
+////                        String string = "";
+////                        while ((stringBuffer = bufferedReader.readLine()) != null){
+////                            string = String.format("%s%s", string, stringBuffer);
+////                        }
+////                        bufferedReader.close();
+//                        googleCredential = myResponse;
+//                        System.out.println("Test OK http:"+myResponse);
+//                    }
+//                }
+//            });
+//
+//            //JSONObject jsonObject = new JSONObject(jsonString)
+//            //System.out.println("jsonString: "+result);
+//
+////            if(jsonString != null){
+////                try {
+////                    JSONObject jsonObject = new JSONObject(jsonString);
+////                } catch (JSONException e) {
+////                    e.printStackTrace();
+////                }
+////
+////            }
+//
+//            return null;
+//        }
+//    }
 }
