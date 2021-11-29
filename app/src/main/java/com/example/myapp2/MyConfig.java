@@ -24,6 +24,7 @@ import java.net.ProtocolException;
 import java.net.URL;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
 
 import th.co.ais.genesis.blueprint.configuration.Config;
 import th.co.ais.genesis.blueprint.log.Log;
@@ -114,6 +115,8 @@ public class MyConfig implements Config {
         String projectIdName;
         Context context ;
         String json;
+        //CountDownLatch countDownLatch = new CountDownLatch(1);
+
         if (value == "language"){
             return "th";
         }else if(value=="sesssionID"){
@@ -147,16 +150,17 @@ public class MyConfig implements Config {
 //                        }
 //                        bufferedReader.close();
 //                        System.out.println("testbuffer"+string);
+                        //countDownLatch.countDown();
                         System.out.println("Test OK http on get:"+myResponse1);
                         googleCredential= myResponse1;
                     }
                 }
             });
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                Thread.sleep(3000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
             System.out.println("Myconfig projectId: "+googleCredential);
             return googleCredential;
         }
